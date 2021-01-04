@@ -1,0 +1,30 @@
+.default: &default
+  before_script:
+    - pip install -r requirements.dev.txt
+  script:
+    - black --check --diff .
+    - flake8 .
+    - mypy --ignore-missing-imports .
+    - python setup.py test
+
+test-3.8:
+  image: python:3.8-slim-buster
+  <<: *default
+
+test-3.7:
+  image: python:3.7-slim-buster
+  <<: *default
+
+test-3.6:
+  image: python:3.6-slim-buster
+  <<: *default
+
+test-3.6-pypy:
+  image: pypywheels/manylinux2010-pypy_x86_64
+  before_script:
+    # black requires typed-ast which pypy currently doesn't support:
+    # https://github.com/psf/black/issues/727#issuecomment-547338207
+    # so we just install what we need to run the tests
+    - /opt/pypy/pypy3.6-7.3.0/bin/pip install flake8 flake8-docstrings
+  script:
+    - /opt/pypy/pypy3.6-7.3.0/bin/python setup.py test
