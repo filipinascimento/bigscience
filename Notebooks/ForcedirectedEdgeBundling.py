@@ -1,4 +1,5 @@
-from numba import jitclass, float32, jit, prange, float64, njit
+from numba import float32, jit, prange, float64, njit
+from numba.experimental import jitclass
 from numba.typed import List
 from numba.types import ListType, int16, uint8
 from tqdm.auto import tqdm
@@ -383,14 +384,16 @@ def net2edges(network, positions):
 @jit(nopython=True)
 def array2edges(flat_array):
     edges =  get_empty_edge_list()
+    indices = List()
     for edge_idx in range(len(flat_array)):
         source = Point(flat_array[edge_idx][0], flat_array[edge_idx][1])
         target = Point(flat_array[edge_idx][2], flat_array[edge_idx][3])
         edge = Edge(source, target)
         if is_long_enough(edge):
             edges.append(edge)
-
-    return edges
+            indices.append(edge_idx)
+            
+    return edges,indices
 
 
 @jit(nopython=True)

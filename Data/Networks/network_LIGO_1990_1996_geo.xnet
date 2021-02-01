@@ -1,0 +1,23 @@
+#vertices 2 nonweighted
+#edges weighted undirected
+0 1 0.4054651081081644
+#v "Country" s
+"usa"
+"israel"
+#v "CountryCode" s
+"US"
+"IL"
+#v "Field" s
+"university"
+"university"
+#v "ID" n
+903350
+902663
+#v "Name" s
+"Wisconsin U., Milwaukee"
+"Ben Gurion U. of Negev"
+#v "Position" v2
+-87.906389 43.038889
+34.8015111 31.2621917
+#e "year" n
+1996
