@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
-
-
-from IPython.display import display, HTML
 import math
 from tqdm.auto import tqdm
 import pandas as pd
@@ -24,63 +20,32 @@ import sys
 import re
 from datetime import datetime as dt
 import sys
-import nltk
+import matplotlibimport nltk
 nltk.download("stopwords")
 from nltk.corpus import stopwords
-import matplotlib
 
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-get_ipython().run_line_magic('config', "InlineBackend.figure_format = 'retina'")
 
-
-# In[3]:
-
-
-#Set the Path to MAG 
-MAGPath = "/gpfs/sciencegenome/Journal2JournalData/mag/"
-dataPath = PJ("..","..","Data","Processed")
-figuresPath = PJ("..","..","Figures")
+MAGPath = PJ("..","Data","MAG") #PATH TO THE MAG DATA
+dataPath = PJ("..","Data","Processed")
+figuresPath = PJ("..","Figures")
 graycolor = "#808080"
-paper2paperPath = PJ(dataPath,"WOSPaper2Paper.bgz")
-HCAProjectDataPath = "HumanCellAtlas.json"
-HGPTitles2MAGPath = "HGP_Publications_MAG.tsv"
 
+HCAProjectDataPath = PJ("..","Data",,"Publications","Biomedical Papers","HumanCellAtlas.json")
+HGPTitles2MAGPath = PJ("..","Data",,"Publications","Biomedical Papers","HGP_Publications_MAG.tsv")
 
-# In[ ]:
-
-
-
-
-
-# In[4]:
-
-
-# MAG PATH and parameters
-MAGPath = "/gpfs/sciencegenome/Journal2JournalData/mag/"
-# MAGPath = "/home/filsilva/Journal2Journal/Data/Raw/"
 minPaperCount = 1;
 rebuildAll = False
 
-
-# In[5]:
-
-
-# dataPath = PJ("..","..","Data","ProcessedNew")
-temporaryPath = PJ("..","..","Temp")
+temporaryPath = PJ("..","Temp")
 os.makedirs(dataPath, exist_ok=True)
 os.makedirs(temporaryPath, exist_ok=True)
 
 
-# In[6]:
-
-
 def dictFromList(aList):
     return {aList[i]:i for i in range(len(aList))}
-
-
-# In[8]:
 
 
 STOPWORDS = stopwords.words('english')
@@ -103,7 +68,6 @@ def text_prepare(text, STOPWORDS=STOPWORDS):
     return text
 
   
-
 sortedPapersFilePath = PJ(dataPath,"MAGPapersByPaper.txt");
 bgzPapersFilePath = PJ(dataPath,"MAGPapers.bgz");
 
@@ -136,19 +100,51 @@ papersDataTypes = [
 ]
 
 
-# In[10]:
-
-
-get_ipython().run_line_magic('load_ext', 'Cython')
-
-
-# In[11]:
-
-
-get_ipython().run_cell_magic('cython', '', 'import bgzf\nfrom tqdm.auto import tqdm\nimport os\nfrom os.path import join as PJ\nimport bgzf\nimport struct\n\n# Getting paperMetadata\ndef processTitleYearJournal(bgzPapersFilePath,papersDataTypes):\n    estimatedCount = 233745561;\n    index2magID = []\n    index2Title = []\n    index2DOI = []\n    index2Year = []\n    index2OnlineDate = []\n    index2JournalID = []\n    count = 0;\n    with bgzf.open(bgzPapersFilePath,"rb") as infd:\n        pbar = tqdm(total=estimatedCount);\n        while True:\n            pbar.update(1);\n            lengthData = infd.read(8);\n            if(len(lengthData)==8):\n                length = struct.unpack("<q",lengthData)[0];\n            else:\n                break;\n            data = infd.read(length);\n            paperIndex = struct.unpack("<q",data[0:8])[0];\n            currentPointer = 8;\n    #         paperID = struct.unpack("<q",data[8:16])[0];\n            dataDict = {};\n            for (typeIndex,(typeName,typeType)) in enumerate(papersDataTypes):\n                if(typeType==int):\n                    entryValue, = struct.unpack("<q",data[currentPointer:currentPointer+8]);\n                    currentPointer+=8;\n                    dataDict[typeName] = entryValue;\n                else:\n                    entryLength, = struct.unpack("<q",data[currentPointer:currentPointer+8]);\n                    currentPointer+=8;\n                    entryData = data[currentPointer:currentPointer+entryLength].decode("utf8");\n                    currentPointer+=entryLength;\n                    dataDict[typeName] = entryData;\n            index2Title.append(dataDict["PaperTitle"])\n            index2Year.append(dataDict["Year"])\n            index2magID.append(dataDict["PaperId"])\n            index2DOI.append(dataDict["Doi"])\n            index2OnlineDate.append(dataDict["OnlineDate"])\n            index2JournalID.append(dataDict["JournalId"])\n            count+=1;\n#             if(count>100000):\n#                 break;\n    return index2Title,index2magID,index2Year,index2OnlineDate,index2JournalID,index2DOI;\n            ')
-
-
-# In[12]:
+# Getting paper Metadata
+def processTitleYearJournal(bgzPapersFilePath,papersDataTypes):
+    estimatedCount = 233745561;
+    index2magID = []
+    index2Title = []
+    index2DOI = []
+    index2Year = []
+    index2OnlineDate = []
+    index2JournalID = []
+    count = 0;
+    with bgzf.open(bgzPapersFilePath,"rb") as infd:
+        pbar = tqdm(total=estimatedCount);
+        while True:
+            pbar.update(1);
+            lengthData = infd.read(8);
+            if(len(lengthData)==8):
+                length = struct.unpack("<q",lengthData)[0];
+            else:
+                break;
+            data = infd.read(length);
+            paperIndex = struct.unpack("<q",data[0:8])[0];
+            currentPointer = 8;
+    #         paperID = struct.unpack("<q",data[8:16])[0];
+            dataDict = {};
+            for (typeIndex,(typeName,typeType)) in enumerate(papersDataTypes):
+                if(typeType==int):
+                    entryValue, = struct.unpack("<q",data[currentPointer:currentPointer+8]);
+                    currentPointer+=8;
+                    dataDict[typeName] = entryValue;
+                else:
+                    entryLength, = struct.unpack("<q",data[currentPointer:currentPointer+8]);
+                    currentPointer+=8;
+                    entryData = data[currentPointer:currentPointer+entryLength].decode("utf8");
+                    currentPointer+=entryLength;
+                    dataDict[typeName] = entryData;
+            index2Title.append(dataDict["PaperTitle"])
+            index2Year.append(dataDict["Year"])
+            index2magID.append(dataDict["PaperId"])
+            index2DOI.append(dataDict["Doi"])
+            index2OnlineDate.append(dataDict["OnlineDate"])
+            index2JournalID.append(dataDict["JournalId"])
+            count+=1;
+#             if(count>100000):
+#                 break;
+    return index2Title,index2magID,index2Year,index2OnlineDate,index2JournalID,index2DOI;
 
 
 index2Title,index2magID,index2Year,index2OnlineDate,index2JournalID,index2DOI=processTitleYearJournal(bgzPapersFilePath,papersDataTypes)
@@ -163,28 +159,10 @@ for i in tqdm(range(len(index2Year))):
 del index2OnlineDate
 
 
-# In[ ]:
-
-
 magID2Index = dictFromList(index2magID)
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[48]:
-
-
-# Schema
+# Loading extended attributes
 
 # PAPER EXTENDED ATTRIBUTES
 # Column #	Name	Type	Note
@@ -195,7 +173,6 @@ magID2Index = dictFromList(index2magID)
 #                       4: Alternative Title
 # 3	AttributeValue	string	
 
-#WRITE
 paperExtendedAttributesFilePath = PJ(MAGPath,"PaperExtendedAttributes.txt.gz");
 index2PubMedId = [None]*len(index2magID)
 index2PmcId = [None]*len(index2magID)
@@ -232,48 +209,14 @@ with gzip.open(PJ(MAGPath,"PaperExtendedAttributes.txt.gz"),"rt") as fd:
             
             
             
-            
-        
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[61]:
-
-
-# Matching
+# Matching HCA Projects
 with open(HCAProjectDataPath,"rt") as fd:
     HCAProjectData = ujson.load(fd);
 for entry in HCAProjectData:
     if("links" in entry):
         entry.update({x.split(": ")[0]:x.split(": ")[1] for x in entry["links"] if len(x.split(": "))>1})
 
-
-# In[ ]:
-
-
-
-
-
-# In[66]:
-
-
+#By
 #PMC
 #DOI
 #TITLES
@@ -296,16 +239,7 @@ for entry in HCAProjectData:
         
     HCAProjectTitleSets[text_prepare(entry["title"].lower())] = entry;
 
-
-# In[ ]:
-
-
-
-
-
-# In[80]:
-
-
+    
 selectedDOIMatches = {}
 selectedTitleMatches = {}
 selectedPMCMatches = {}
@@ -335,15 +269,11 @@ for i in tqdm(range(len(index2Year))):
         selectedTitleMatches[reducedTitle] = i;
         continue;
 
+        
 
-# In[106]:
-
+#Matching HCA projects
 
 HCAProjectMAGIndices = set(selectedDOIMatches.values()).union(set(selectedTitleMatches.values()))
-
-
-# In[253]:
-
 
 #Human Cell Atlas
 HCAMissingData = []
@@ -358,20 +288,14 @@ for entry in HCAProjectData:
         continue
     HCAMissingData.append(entry)
 # print(missingData)
-with open("HCA_MAGIndices.json","wt") as fd:
+
+#Saving HCA Matched MAG Indices
+with open(PJ("..","Data","Publications","Biomedical Papers","HCA_MAGIndices.json"),"wt") as fd:
     ujson.dump(HCAProjectMAGIndices,fd)
     
-with open("HCA_MissingEntries.json","wt") as fd:
+with open(PJ("..","Data","Publications","Biomedical Papers","HCA_MissingEntries.json"),"wt" as fd:
     ujson.dump(HCAMissingData,fd)
 
-
-# In[ ]:
-
-
-
-
-
-# In[401]:
 
 
 #Human Genome Project
@@ -388,16 +312,14 @@ for referece,url in dfHGP[["Reference","MAG URL"]].to_numpy():
         
     HGPMissingData.append(referece);
 
-with open("HGP_MAGIndices.json","wt") as fd:
+with open(PJ("..","Data","Publications","Biomedical Papers","HGP_MAGIndices.json"),"wt") as fd:
     ujson.dump(HGPProjectMAGIndices,fd)
     
-with open("HGP_MissingEntries.json","wt") as fd:
+with open(PJ("..","Data","Publications","Biomedical Papers","HGP_MissingEntries.json"),"wt") as fd:
     ujson.dump(HGPMissingData,fd)
 
 
-# In[166]:
-
-
+          
 HBMapDataPaths = [
     "Pubhl_Export_21Jan2021_084406.csv",
     "Pubhl_Export_21Jan2021_084445.csv",
@@ -405,15 +327,9 @@ HBMapDataPaths = [
 ]
 
 
-# In[216]:
-
-
 HBMapTitleKey = "Title (Link to full-text in PubMed Central)"
 HBMapDfs = [pd.read_csv(filename,dtype={"PMC ID":str,"PMID":str}) for filename in HBMapDataPaths]
 HBMapDf = pd.concat(HBMapDfs,sort=False)
-
-
-# In[227]:
 
 
 HBMapTitles = HBMapDf[HBMapTitleKey].to_list()
@@ -421,9 +337,7 @@ HBMapReducedTitles = set(text_prepare(title.lower()) for title in HBMapTitles if
 HBMapPMCIDs = set(pmcid.lower() for pmcid in HBMapDf["PMC ID"].to_list() if isinstance(pmcid,str))
 HBMapPUBMEDIDs = set(pubmedID.lower() for pubmedID in HBMapDf["PMID"].to_list() if isinstance(pubmedID,str))
 
-
-# In[229]:
-
+          
 
 HBMapSelectedDOIMatches = {}
 HBMapSelectedTitleMatches = {}
@@ -453,15 +367,6 @@ for i in tqdm(range(len(index2Year))):
         HBMapSelectedTitleMatches[reducedTitle] = i;
         pbar2.update(1);
         continue;
-
-
-# In[235]:
-
-
-
-
-
-# In[297]:
 
 
 HBMapProjectMAGIndices = set(HBMapSelectedPMCMatches.values()).union(set(HBMapSelectedPUBMEDMatches.values()).union(set(HBMapSelectedTitleMatches.values())))
@@ -495,17 +400,20 @@ HBMapManualMAGIDIncludes = [
     3081828282,
     3099559583,
 ]
+          
+          
 #Only adding matches in currentMAGData
 for magID in HBMapManualMAGIDIncludes:
     if(magID in magID2Index):
         HBMapProjectMAGIndices.add(magID2Index[magID])
 
-with open("HBMap_MAGIndices.json","wt") as fd:
+with open(PJ("..","Data","Publications","Biomedical Papers","HBMap_MAGIndices.json"),"wt") as fd:
     ujson.dump(HBMapProjectMAGIndices,fd)
     
-with open("HBMap_MissingEntries.json","wt") as fd:
+with open(PJ("..","Data","Publications","Biomedical Papers","HBMap_MissingEntries.json"),"wt") as fd:
     ujson.dump(HBMapMissingData,fd)
 
+          
 
 # In[402]:
 
@@ -514,7 +422,7 @@ with open("HBMap_MissingEntries.json","wt") as fd:
 print("Summary")
 print("HCA")
 print("\tMatches: %d\n\tMissing:%d"%(len(HCAProjectMAGIndices),len(HCAMissingData)))
-print("HuBMap")
+print("HuBMAP")
 print("\tMatches: %d\n\tMissing:%d"%(len(HBMapProjectMAGIndices),len(HBMapMissingData)))
 print("HGP")
 print("\tMatches: %d\n\tMissing:%d"%(len(HGPProjectMAGIndices),len(HGPMissingData)))
@@ -523,24 +431,18 @@ print("\tMatches: %d\n\tMissing:%d"%(len(HGPProjectMAGIndices),len(HGPMissingDat
 # In[ ]:
 
 
-
-with open("HCA_MAGIndices.json","rt") as fd:
+# Testing open
+with open(PJ("..","Data","Publications","Biomedical Papers","HCA_MAGIndices.json"),"rt") as fd:
     HCAProjectMAGIndices = set(ujson.load(fd))
     
-with open("HBMap_MAGIndices.json","rt") as fd:
+with open(PJ("..","Data","Publications","Biomedical Papers","HBMap_MAGIndices.json"),"rt") as fd:
     HBMapProjectMAGIndices = set(ujson.load(fd))
     
-with open("HGP_MAGIndices.json","rt") as fd:
+with open(PJ("..","Data","Publications","Biomedical Papers","HGP_MAGIndices.json"),"rt") as fd:
     HGPProjectMAGIndices = set(ujson.load(fd))
 
 
-# In[ ]:
-
-
-
-
-
-# In[54]:
+# Matching with MAG
 
 
 #references FromTo
@@ -556,8 +458,8 @@ HGPCitationsPerYear = {};
 
 projectCitations = {
     "HCA":(HCAProjectMAGIndices,HCACitationsPerYear),
-    "HuBMap":(HBMapProjectMAGIndices,HBMapCitationsPerYear),
-    "HCA+HuBMap":(HBMapProjectMAGIndices.union(HCAProjectMAGIndices),HCAHuBMapCitationsPerYear),
+    "HuBMAP":(HBMapProjectMAGIndices,HBMapCitationsPerYear),
+    "HuBMAP+HCA":(HBMapProjectMAGIndices.union(HCAProjectMAGIndices),HCAHuBMapCitationsPerYear),
     "HGP":(HGPProjectMAGIndices,HGPCitationsPerYear)
 }
 
@@ -594,152 +496,9 @@ with bgzf.open(bgzReferencesFromToPath,"rb") as infd:
             
 
 
-# In[ ]:
 
-
-
-
-
-# In[71]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-citationsByProject = {}
-cumulativeCitationsByProject = {}
-for plotIndex,(projectName,(indices,citationsPerYear)) in enumerate(projectCitations.items()):
-    
-    yearCitations = [(year,len(citations)) for year,citations in citationsPerYear.items() if year>=minYear and year<=maxYear]
-    yearCitations = sorted(yearCitations,key=lambda y:y[0])
-    years,citations = list(zip(*yearCitations))
-    citationsByProject[projectName] = [list(years),list(citations)]
-    cumulativeCitationsByProject[projectName] = [list(years),np.cumsum(citations).tolist()]
-    
-    ax.plot(years,citations,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-	
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_ylabel("Citations")
-ax.set_xlim(1997,2021)
-plt.savefig("../../Figures/BioMedCitations.pdf")
-plt.show()
-
-
-# In[74]:
-
-
-with open("../../Data/BioMed_CitationsData.json","wt") as fd:
-    ujson.dump(citationsByProject,fd)
-with open("../../Data/BioMed_CumulativeCitationsData.json","wt") as fd:
-    ujson.dump(cumulativeCitationsByProject,fd)
-
-
-# In[ ]:
-
-
-
-
-
-# In[51]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-citationsByProject = {}
-cumulativeCitationsByProject = {}
-for plotIndex,(projectName,(indices,citationsPerYear)) in enumerate(projectCitations.items()):
-    
-    yearCitations = [(year,len(citations)) for year,citations in citationsPerYear.items() if year>=minYear and year<=maxYear]
-    yearCitations = sorted(yearCitations,key=lambda y:y[0])
-    years,citations = list(zip(*yearCitations))
-    citationsByProject[projectName] = (years,citations)
-    cumulativeCitationsByProject[projectName] = (years,np.cumsum(citations))
-    
-    ax.plot(range(len(years)),citations,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-	
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Years since the project began")
-ax.set_ylabel("Citations")
-# ax.set_xlim(1997,2021)
-plt.savefig("../../Figures/BioMedCitationsSinceStart.pdf")
-plt.show()
-
-
-# In[34]:
-
-
-#Number of citations
-for name,(year,cumualtiveCitations) in cumulativeCitationsByProject.items():
-  print("%s: %d"%(name,cumualtiveCitations[-1]))
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,citationsPerYear)) in enumerate(projectCitations.items()):
-    
-    yearCitations = [(year,len(citations)) for year,citations in citationsPerYear.items() if year>=minYear and year<=maxYear]
-    yearCitations = sorted(yearCitations,key=lambda y:y[0])
-    years,citations = list(zip(*yearCitations))
-
-    ax.plot(years,citations,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-	
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_ylabel("Citations")
-ax.set_xlim(1997,2021)
-plt.savefig("../../Figures/BioMedCitations.pdf")
-plt.show()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
+          
+          
 
 
 HCAAffiliationsPerYear = {};
@@ -752,8 +511,8 @@ HGPAuthorsPerYear = {};
 
 projectAuthorAffiliations = {
     "HCA":(HCAProjectMAGIndices,HCAAffiliationsPerYear,HCAAuthorsPerYear),
-    "HuBMap":(HBMapProjectMAGIndices,HuBMapAffiliationsPerYear,HuBMapAuthorsPerYear),
-    "HuBMap+HCA":(HBMapProjectMAGIndices,HuBMapAffiliationsPerYear,HuBMapAuthorsPerYear),
+    "HuBMAP":(HBMapProjectMAGIndices,HuBMapAffiliationsPerYear,HuBMapAuthorsPerYear),
+    "HuBMAP+HCA":(set(HBMapProjectMAGIndices).union(set(HCAProjectMAGIndices)),HuBMapAffiliationsPerYear,HuBMapAuthorsPerYear),
     "HGP":(HGPProjectMAGIndices,HGPAffiliationsPerYear,HGPAuthorsPerYear)
 }
 
@@ -797,290 +556,15 @@ with open(PJ(MAGPath,"PaperAuthorAffiliations.txt"),"rt") as fd:
                             affiliationsPerYear[paperYear] = set();
                         affiliationsPerYear[paperYear].add(paperAffiliationID);
 
-
-# In[45]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,affiliationsPerYear,authorsPerYear)) in enumerate(projectAuthorAffiliations.items()):
-    
-    yearAffiliations = [(year,len(affiliations)) for year,affiliations in affiliationsPerYear.items() if year>=minYear and year<=maxYear]
-    yearAffiliations = sorted(yearAffiliations,key=lambda y:y[0])
-    years,affiliations = list(zip(*yearAffiliations))
-
-    ax.plot(years,affiliations,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-
-ax.set_xlim(1997,2021)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_ylabel("Number of Affiliations")
-plt.savefig("../../Figures/BioMedAffiliations.pdf")
-plt.show()
-
-
-# In[46]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,affiliationsPerYear,authorsPerYear)) in enumerate(projectAuthorAffiliations.items()):
-    
-    yearAffiliations = [(year,len(affiliations)) for year,affiliations in affiliationsPerYear.items() if year>=minYear and year<=maxYear]
-    yearAffiliations = sorted(yearAffiliations,key=lambda y:y[0])
-    years,affiliations = list(zip(*yearAffiliations))
-
-    ax.plot(range(len(years)),affiliations,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-
-# ax.set_xlim(1997,2021)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Years since the project began")
-ax.set_ylabel("Number of Affiliations")
-plt.savefig("../../Figures/BioMedAffiliationsSinceStart.pdf")
-plt.show()
-
-
-# In[48]:
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,affiliationsPerYear,authorsPerYear)) in enumerate(projectAuthorAffiliations.items()):
-    totalAffiliations = set()
-    yearAffiliations = sorted(affiliationsPerYear.items(),key=lambda y:y[0])
-    affiliationsCounts = []
-    years = []
-    for year,affiliations in yearAffiliations:
-        if year>=minYear and year<=maxYear:
-            totalAffiliations.update(affiliations);
-            affiliationsCounts.append(len(totalAffiliations))
-            years.append(year);
-    
-    
-    ax.plot(years,affiliationsCounts,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-    print("%s: %d"%(projectName,affiliationsCounts[-1]))
-# ax.set_xlim(1997,2021)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_ylabel("Total number of affiliations")
-plt.savefig("../../Figures/BioMedAffiliationsTotal.pdf")
-plt.show()
-
-
-# In[47]:
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,affiliationsPerYear,authorsPerYear)) in enumerate(projectAuthorAffiliations.items()):
-    totalAffiliations = set()
-    yearAffiliations = sorted(affiliationsPerYear.items(),key=lambda y:y[0])
-    affiliationsCounts = []
-    years = []
-    for year,affiliations in yearAffiliations:
-        if year>=minYear and year<=maxYear:
-            totalAffiliations.update(affiliations);
-            affiliationsCounts.append(len(totalAffiliations))
-            years.append(year);
-    
-    
-    ax.plot(range(len(years)),affiliationsCounts,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-    print("%s: %d"%(projectName,affiliationsCounts[-1]))
-# ax.set_xlim(1997,2021)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Years since the project began")
-ax.set_ylabel("Total number of affiliations")
-plt.savefig("../../Figures/BioMedAffiliationsTotalSinceStart.pdf")
-plt.show()
-
-
-# In[40]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,authorsPerYear,authorsPerYear)) in enumerate(projectAuthorAffiliations.items()):
-    
-    yearAuthors = [(year,len(authors)) for year,authors in authorsPerYear.items() if year>=minYear and year<=maxYear]
-    yearAuthors = sorted(yearAuthors,key=lambda y:y[0])
-    years,authors = list(zip(*yearAuthors))
-
-    ax.plot(range(len(years)),authors,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-
-# ax.set_xlim(1997,2021)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_xlabel("Years since the project began")
-plt.savefig("../../Figures/BioMedAuthorsSinceStart.pdf")
-plt.show()
-
-
-# In[39]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,authorsPerYear,authorsPerYear)) in enumerate(projectAuthorAffiliations.items()):
-    
-    yearAuthors = [(year,len(authors)) for year,authors in authorsPerYear.items() if year>=minYear and year<=maxYear]
-    yearAuthors = sorted(yearAuthors,key=lambda y:y[0])
-    years,authors = list(zip(*yearAuthors))
-
-    ax.plot(years,authors,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-
-ax.set_xlim(1997,2021)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_ylabel("Number of participating authors")
-plt.savefig("../../Figures/BioMedAuthors.pdf")
-plt.show()
-
-
-# In[43]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,authorsPerYear,authorsPerYear)) in enumerate(projectAuthorAffiliations.items()):
-    totalAuthors = set()
-    yearAuthors = sorted(authorsPerYear.items(),key=lambda y:y[0])
-    authorsCounts = []
-    years = []
-    for year,authors in yearAuthors:
-        if year>=minYear and year<=maxYear:
-            totalAuthors.update(authors);
-            authorsCounts.append(len(totalAuthors))
-            years.append(year);
-    
-    
-    ax.plot(range(len(years)),authorsCounts,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-    print("%s: %d"%(projectName,authorsCounts[-1]))
-# ax.set_xlim(1997,2021)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Years since the project began")
-ax.set_ylabel("Total number of authors")
-plt.savefig("../../Figures/BioMedAuthorsTotalSinceStart.pdf")
-plt.show()
-
-
-# In[38]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(indices,authorsPerYear,authorsPerYear)) in enumerate(projectAuthorAffiliations.items()):
-    totalAuthors = set()
-    yearAuthors = sorted(authorsPerYear.items(),key=lambda y:y[0])
-    authorsCounts = []
-    years = []
-    for year,authors in yearAuthors:
-        if year>=minYear and year<=maxYear:
-            totalAuthors.update(authors);
-            authorsCounts.append(len(totalAuthors))
-            years.append(year);
-    
-    
-    ax.plot(years,authorsCounts,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-
-ax.set_xlim(1997,2021)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_ylabel("Total number of authors")
-plt.savefig("../../Figures/BioMedAuthorsTotal.pdf")
-plt.show()
-
-
-# In[ ]:
-
-
-[index2magID[index] for index in HGPProjectMAGIndices if index2FirstYear[index]>2008]
-
-
-# In[13]:
-
-
-
-
-
-# In[36]:
-
-
+          
 
 indicesByProject = {
 "HCA" : HCAProjectMAGIndices,
-"HuBMap" : HBMapProjectMAGIndices,
+"HuBMAP" : HBMapProjectMAGIndices,
+"HuBMAP+HCA" : set(HBMapProjectMAGIndices).union(set(HCAProjectMAGIndices)),
 "HGP" : HGPProjectMAGIndices
 }
+          
 magIDsByProject = {}
 allMAGIDs = set()
 for projectName,indices in indicesByProject.items():
@@ -1089,7 +573,7 @@ for projectName,indices in indicesByProject.items():
 
 exportFilesByProject = {}
 for projectName,indices in indicesByProject.items():
-    exportFilesByProject[projectName] = open("../../Data/Papers_%s.tsv"%projectName,"w")
+    exportFilesByProject[projectName] = open(PJ("..","Data", "Publications","Biomedical_Papers_%s.tsv"%projectName),"w")
     headers = [entryName for entryName,_ in papersDataTypes]
     headers.append("Author IDs")
     headers.append("Affiliation IDs")
@@ -1124,276 +608,9 @@ for projectName,indices in indicesByProject.items():
     exportFilesByProject[projectName].close()
 
 
-# In[135]:
+          
 
-
-pd.read_csv("../../Data/Papers_%s_v2.tsv"%"HuBMap+HCA",sep="\t").to_csv("../../Data/Papers_%s_v2.csv"%"HuBMap+HCA")
-
-
-# In[ ]:
-
-
-
-
-
-# In[34]:
-
-
-MAGID2AffiliationIDs[2138980320]
-
-
-# In[ ]:
-
-
-
-
-
-# In[54]:
-
-
-MAGID2AuthorsIDs[paperID].append(paperAuthorID);
-MAGID2AffiliationIDs[paperID].append(paperAffiliationID);
-
-
-# In[ ]:
-
-
-projectAuthorAffiliations
-
-
-# In[45]:
-
-
-
-dfHCA = pd.read_csv("../../Data/Papers_%s.tsv"%"HCA",sep="\t")
-dfHuBMap = pd.read_csv("../../Data/Papers_%s.tsv"%"HuBMap",sep="\t")
-
-
-dfBioMed = {
-    "HuBMap+HCA": pd.concat([dfHCA,dfHuBMap]).reset_index(),
-    "HGP": pd.read_csv("../../Data/Papers_%s.tsv"%"HGP",sep="\t")
-}
-
-for projectName,df in dfBioMed.items():
-    dfBioMed[projectName] = df.replace(np.nan, '', regex=True)
-    
-
-
-# In[46]:
-
-
-# dfBioMed[projectName]
-"Affiliation IDs"
-"Author IDs"
-dfBioMed["HGP"]["Year"].min()
-
-
-# In[54]:
-
-
-totalAffiliationsByProject = {}
-for projectName,dfProject in dfBioMed.items():
-    affiliations = dfProject.groupby(['Year'])["Affiliation IDs"].apply(lambda x: ';'.join([entry for entry in x if isinstance(entry,str)])).reset_index()
-    print(projectName)
-    minYear = dfProject["Year"].min()
-    maxYear = dfProject["Year"].max()
-    years = []
-    affiliationCounts = []
-    for year in range(minYear,maxYear+1):
-        yearAffiliations = list(affiliations[affiliations["Year"]<=year]["Affiliation IDs"])
-        yearAffiliationsMerge = ";".join(yearAffiliations)
-        yearAffiliationsSet = set()
-        for affiliationID in yearAffiliationsMerge.split(";"):
-            affiliationID.strip().lower()
-            if(affiliationID):
-                yearAffiliationsSet.add(affiliationID);
-        years.append(year)
-        affiliationCounts.append(len(yearAffiliationsSet))
-        print("%d\t%d"%(int(year),len(yearAffiliationsSet)))
-    totalAffiliationsByProject[projectName] = [years,affiliationCounts]
-
-
-# In[66]:
-
-
-# dfProject[dfProject["Year"]==2009]
-
-
-# In[62]:
-
-
-affiliationsByProject = {}
-for projectName,dfProject in dfBioMed.items():
-    affiliations = dfProject.groupby(['Year'])["Affiliation IDs"].apply(lambda x: ';'.join([entry for entry in x if isinstance(entry,str)])).reset_index()
-    print(projectName)
-    minYear = dfProject["Year"].min()
-    maxYear = dfProject["Year"].max()
-    years = []
-    affiliationCounts = []
-    for year in range(minYear,maxYear+1):
-        yearAffiliations = list(affiliations[affiliations["Year"]==year]["Affiliation IDs"])
-        yearAffiliationsMerge = ";".join(yearAffiliations)
-        yearAffiliationsSet = set()
-        for affiliationID in yearAffiliationsMerge.split(";"):
-            affiliationID.strip().lower()
-            if(affiliationID):
-                yearAffiliationsSet.add(affiliationID);
-        years.append(year)
-        affiliationCounts.append(len(yearAffiliationsSet))
-        print("%d\t%d"%(int(year),len(yearAffiliationsSet)))
-    affiliationsByProject[projectName] = [years,affiliationCounts]
-
-
-# In[59]:
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(years,affiliationCount)) in enumerate(totalAffiliationsByProject.items()):
-    ax.plot(range(len(years)),affiliationCount,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-
-# ax.set_xlim(1997,2021)
-
-ax.set_ylim(ymin=0)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_ylabel("Total number of affiliations")
-plt.savefig("../../Figures/BioMedAffiliationsTotal_v2.pdf")
-plt.show()
-
-
-# In[60]:
-
-
-totalAuthorsByProject = {}
-for projectName,dfProject in dfBioMed.items():
-    authors = dfProject.groupby(['Year'])["Author IDs"].apply(lambda x: ';'.join([entry for entry in x if isinstance(entry,str)])).reset_index()
-    print(projectName)
-    minYear = dfProject["Year"].min()
-    maxYear = dfProject["Year"].max()
-    years = []
-    authorCounts = []
-    for year in range(minYear,maxYear+1):
-        yearAuthors = list(authors[authors["Year"]<=year]["Author IDs"])
-        yearAuthorsMerge = ";".join(yearAuthors)
-        yearAuthorsSet = set()
-        for authorID in yearAuthorsMerge.split(";"):
-            authorID.strip().lower()
-            if(authorID):
-                yearAuthorsSet.add(authorID);
-        years.append(year)
-        authorCounts.append(len(yearAuthorsSet))
-        print("%d\t%d"%(int(year),len(yearAuthorsSet)))
-    totalAuthorsByProject[projectName] = [years,authorCounts]
-
-
-# In[98]:
-
-
-authorsByProject = {}
-for projectName,dfProject in dfBioMed.items():
-    authors = dfProject.groupby(['Year'])["Author IDs"].apply(lambda x: ';'.join([entry for entry in x if isinstance(entry,str)])).reset_index()
-    print(projectName)
-    minYear = dfProject["Year"].min()
-    maxYear = dfProject["Year"].max()
-    years = []
-    authorCounts = []
-    for year in range(minYear,maxYear+1):
-        yearAuthors = list(authors[authors["Year"]==year]["Author IDs"])
-        yearAuthorsMerge = ";".join(yearAuthors)
-        yearAuthorsSet = set()
-        for authorID in yearAuthorsMerge.split(";"):
-            authorID.strip().lower()
-            if(authorID):
-                yearAuthorsSet.add(authorID);
-        years.append(year)
-        authorCounts.append(len(yearAuthorsSet))
-        print("%d\t%d"%(int(year),len(yearAuthorsSet)))
-    authorsByProject[projectName] = [years,authorCounts]
-
-
-# In[100]:
-
-
-
-minYear = 1990
-maxYear = 2020
-markerStyles = [
-  "o-",
-  "s--",
-  "^-.",
-  "D:",
-]
-ax = plt.subplot(111)
-for plotIndex,(projectName,(years,authorCount)) in enumerate(authorsByProject.items()):
-    ax.plot(range(len(years)),authorCount,markerStyles[plotIndex%len(markerStyles)],label=projectName);
-
-# ax.set_xlim(1997,2021)
-
-ax.set_ylim(ymin=0)
-ax.legend()
-# ax.set_title("Citations over time")
-ax.set_xlabel("Year")
-ax.set_ylabel("Total number of authors")
-plt.savefig("../../Figures/BioMedAuthorsTotal_v2.pdf")
-plt.show()
-
-
-# In[ ]:
-
-
-
-
-
-# In[71]:
-
-
-with open("../../Data/BioMed_AffiliationsData.json","wt") as fd:
-    ujson.dump(affiliationsByProject,fd)
-with open("../../Data/BioMed_TotalAffiliationsData.json","wt") as fd:
-    ujson.dump(totalAffiliationsByProject,fd)
-
-
-# In[74]:
-
-
-with open("../../Data/BioMed_AuthorsData.json","wt") as fd:
-    ujson.dump(authorsByProject,fd)
-with open("../../Data/BioMed_TotalAuthorsData.json","wt") as fd:
-    ujson.dump(totalAuthorsByProject,fd)
-
-
-# In[104]:
-
-
-from collections import Counter
-publicationsByProject = {}
-for projectName,dfProject in dfBioMed.items():
-    years,publicationCount = list(zip(*sorted(list(Counter(dfProject['Year']).items()),key=lambda x:x[0])))
-    minYear = dfProject["Year"].min()
-    maxYear = dfProject["Year"].max()
-    
-    publicationsByProject[projectName] = [years,publicationCount]
-
-
-# In[103]:
-
-
-with open("../../Data/BioMed_PublicationsData.json","wt") as fd:
-    ujson.dump(publicationsByProject,fd)
-
-
-# In[105]:
-
-
+          
 # Loading MAG Data
 journalIndex2MAGID = np.loadtxt(PJ(dataPath,"MAGJournalIndex2ID.txt.gz"),dtype=int)
 journalMAGID2Index = dictFromList(journalIndex2MAGID)
@@ -1417,17 +634,24 @@ with gzip.open(PJ(dataPath,"MAGJournalISSN.txt.gz"),"rt") as fd:
     journalMAGISSN = [line.strip() for line in fd]
 
 
-# In[127]:
+
+dfBioMed = {
+    "HuBMAP+HCA": pd.read_csv(PJ("..","Data","Publications","Biomedical_Papers_HuBMAP+HCA.csv")),
+    "HGP": pd.read_csv(PJ("..","Data","Publications","Biomedical_Papers_HGP.csv"))
+}
 
 
+          
+#Fixing journal names
 for projectName,df in dfBioMed.items():
     df["Journal Name"] = [journalMAGNames[journalMAGID2Index[int(ID)]] if ID else "" for ID in df["JournalId"]]
     df["Journal Long Name"] = [journalMAGLongNames[journalMAGID2Index[int(ID)]] if ID else "" for ID in df["JournalId"]]
-    df.to_csv("../../Data/Papers_%s_v2.tsv"%projectName,sep='\t')
+    df.to_csv(PJ("..","Data", "Publications","Biomedical_Papers_%s.csv"%projectName))
+
+          
 
 
-# In[126]:
 
-
-
+          
+          
 
