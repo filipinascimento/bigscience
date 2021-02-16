@@ -1,5 +1,5 @@
 # Big Science
-This repository contains data and code used for data analyses and visualizations discussed in the “Embracing data-driven decision making to manage and communicate the impact of big science collaborations” paper. Four High Energy Physics and Astrophysics projects were studied: *ATLAS*, *BaBar*, *LIGO*, and *IceCube*. Data for these projects was collected from the INSPIRE HEP (https://inspirehep.net)collected from http://old.inspirehep.net/dumps/inspire-dump.html on Jan 8 2020. We also collected data from three BioMedical projects: The Human Genome Project (HGP), Human Cell Atlas (HCA), and Human BioMolecular Atlas Program (HuBMAP). Citation data for publications associated with these projects was collected using Microsoft Academic Graph (MAG) data.
+This repository contains data and code used for data analyses and visualizations discussed in the “Embracing data-driven decision making to manage and communicate the impact of big science collaborations” paper. Four High Energy Physics and Astrophysics projects were studied: *ATLAS*, *BaBar*, *LIGO*, and *IceCube*. Data for these projects was collected from the INSPIRE HEP (https://inspirehep.net) collected from http://old.inspirehep.net/dumps/inspire-dump.html on Jan 8 2020. We also collected data from three BioMedical projects: The Human Genome Project (HGP), Human Cell Atlas (HCA), and Human BioMolecular Atlas Program (HuBMAP). Citation data for publications associated with these projects was collected using Microsoft Academic Graph (MAG) data.
 
 ## Data Organization
 Processed data is organized in the `Data` folder:
@@ -12,7 +12,7 @@ Processed data is organized in the `Data` folder:
 - `Data/Bundling`: contains processed files for the edge bundling algorithm applied to the institution collaboration networks to generate Fig. 2
 - `Data/PlotData`: contains all the processed data of the projects used to plot the considered metrics over time for Fig. 1.
 - `Data/MAG`: Place to move the MAG dataset.
-- `Data/INSPIRE`: Place to move the INSPIRE dataset files (can be collected from http://old.inspirehep.net/dumps/inspire-dump.html).
+- `Data/INSPIRE`: Place to move the INSPIRE dataset files. The complete dataset employed in this study can be found in https://dx.doi.org/10.5281/zenodo.4496558. (a more recent version can be collected from http://old.inspirehep.net/dumps/inspire-dump.html).
 
 ## Code Organization
 In order to run the full data processing pipeline, MAG data and INSPIRE data should be downloaded and moved to their respective folders in `Data`. The code can be found in the `Notebooks` and `Scripts` folders. `Scripts` folder contains the code to preprocess INSPIRE (`preprocessINSPIRE.py`) and the MAG dataset `preprocessMAG.py`. Both scripts need to be executed before the analyses if the objective is regenerate all the intermediate datasets. This process is not needed to generate the final plots by using `Notebooks/PlotAllProjects.ipynb` and `Notebooks/GenerateMaps.ipynb`, as these scripts only require files in the `Data/PlotData/` and `Data/Networks/`, which are already available in this repository.
