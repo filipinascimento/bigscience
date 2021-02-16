@@ -13,7 +13,7 @@ Processed data is organized in the `Data` folder:
 - `Data/PlotData`: contains all the processed data of the projects used to plot the considered metrics over time for Fig. 1.
 - `Data/MAG`: Place to move the MAG dataset.
 - `Data/INSPIRE`: Place to move the INSPIRE dataset files. The complete dataset employed in this study can be found in https://dx.doi.org/10.5281/zenodo.4496558. (a more recent version can be collected from http://old.inspirehep.net/dumps/inspire-dump.html).
-- `Data/ToInstitutionsMap`: contains all the processed data used to generate Fig. 2 and interactive visualizations for the collaboration network of institutions.
+- `Data/ToInstitutionsMap`: contains all the processed data used to generate Fig. 2 and the interactive visualizations for the collaboration network of institutions.
 - `Data/ToMapOfScience`: contains all the processed data used to generate Fig. 3 and the map of science interactive visualizations.
 
 
