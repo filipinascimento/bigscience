@@ -13,6 +13,9 @@ Processed data is organized in the `Data` folder:
 - `Data/PlotData`: contains all the processed data of the projects used to plot the considered metrics over time for Fig. 1.
 - `Data/MAG`: Place to move the MAG dataset.
 - `Data/INSPIRE`: Place to move the INSPIRE dataset files. The complete dataset employed in this study can be found in https://dx.doi.org/10.5281/zenodo.4496558. (a more recent version can be collected from http://old.inspirehep.net/dumps/inspire-dump.html).
+- `Data/ToInstitutionsMap`: contains all the processed data used to generate Fig. 2 and interactive visualizations for the collaboration network of institutions.
+- `Data/ToMapOfScience`: contains all the processed data used to generate Fig. 3 and the map of science interactive visualizations.
+
 
 ## Code Organization
 In order to run the full data processing pipeline, MAG data and INSPIRE data should be downloaded and moved to their respective folders in `Data`. The code can be found in the `Notebooks` and `Scripts` folders. `Scripts` folder contains the code to preprocess INSPIRE (`preprocessINSPIRE.py`) and the MAG dataset `preprocessMAG.py`. Both scripts need to be executed before the analyses if the objective is regenerate all the intermediate datasets. This process is not needed to generate the final plots by using `Notebooks/PlotAllProjects.ipynb` and `Notebooks/GenerateMaps.ipynb`, as these scripts only require files in the `Data/PlotData/` and `Data/Networks/`, which are already available in this repository.
