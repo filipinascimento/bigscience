@@ -601,6 +601,90 @@ def processData(entryData):
   return outData;
 
 
+def processJournal(entryData):
+  outData = {}
+  
+  propertyName = "ID"
+  outData[propertyName] = getEntry(
+    entryData,
+    "001",
+    subtags=None,
+    isList=False,
+    onErrorParent=True
+  )
+  
+  propertyName = "Title"
+  outData[propertyName] = getEntry(
+    entryData,
+    "130",
+    subtags="a",
+    isList=False,
+    onErrorParent=False
+  )
+  
+  propertyName = "Abbreviation"
+  outData[propertyName] = getEntry(
+    entryData,
+    "711",
+    subtags="a",
+    isList=False,
+    onErrorParent=False
+  )
+  
+  propertyName = "Abbreviation 2"
+  outData[propertyName] = getEntry(
+    entryData,
+    "730",
+    subtags="a",
+    isList=False,
+    onErrorParent=False
+  )
+  
+  return outData;
+
+
+
+def processConferences(entryData):
+  outData = {}
+  
+  propertyName = "ID"
+  outData[propertyName] = getEntry(
+    entryData,
+    "001",
+    subtags=None,
+    isList=False,
+    onErrorParent=False
+  )
+  
+  propertyName = "Title"
+  outData[propertyName] = getEntry(
+    entryData,
+    "111",
+    subtags="a",
+    isList=False,
+    onErrorParent=False
+  )
+  
+  propertyName = "Date"
+  outData[propertyName] = getEntry(
+    entryData,
+    "111",
+    subtags="d",
+    isList=False,
+    onErrorParent=False
+  )
+  
+  propertyName = "Location"
+  outData[propertyName] = getEntry(
+    entryData,
+    "111",
+    subtags="c",
+    isList=False,
+    onErrorParent=False
+  )
+  
+  return outData;
+
 
 # with gzip.open("../Data/HEP-records.xml.gz","r") as fd:
 #   data = ujson.loads(ujson.dumps(xmltodict.parse(fd.read())));
@@ -773,7 +857,8 @@ institutionsBGZ = PJ(processedDataPath,"Institutions.bgzip");
 dataBGZ = PJ(processedDataPath,"Data.bgzip");
 namesBGZ = PJ(processedDataPath,"Names.bgzip");
 jobsBGZ = PJ(processedDataPath,"Jobs-records.bgzip");
-
+journalsBGZ = PJ(processedDataPath,"Journals-records.bgzip");
+conferencesBGZ = PJ(processedDataPath,"Conferences-records.bgzip");
 
 print("\nProcessing HEP Entries:")
 HEPEntries,allKeys,allKeysExample,allKeysListCount = \
@@ -835,6 +920,21 @@ HEPNames,allKeys,allKeysExample,allKeysListCount = \
 
 print("\nSaving HEP Names entries...")
 savebgzip(namesBGZ,HEPNames)
+
+print("\nProcessing Journal entries...")
+HEPJournals,allKeys,allKeysExample,allKeysListCount = \
+   readMARC(PJ(inspireDumpPath,"Journals-records.xml.gz"),processJournal,estimated=3684)
+
+print("\nSaving Journal entries...")
+savebgzip(journalsBGZ,HEPJournals)
+
+print("\nProcessing Journal entries...")
+HEPConferences,allKeys,allKeysExample,allKeysListCount = \
+   readMARC(PJ(inspireDumpPath,"Conferences-records.xml.gz"),processConferences,estimated=24168)
+
+print("\nSaving Journal entries...")
+savebgzip(conferencesBGZ,HEPConferences)
+
 
 # for key in sorted(allKeys.keys()):
 #   padding = ""

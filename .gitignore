@@ -160,3 +160,8 @@ Temporary Items
 Data/INSPIRE/
 OLD/
 
+
+.build
+build
+web_modules
+node_modules

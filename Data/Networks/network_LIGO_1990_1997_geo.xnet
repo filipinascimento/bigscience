@@ -1,7 +1,7 @@
 #vertices 4 nonweighted
 #edges weighted undirected
-0 3 0.4054651081081644
-1 2 0.4054651081081644
+0 3 1.0
+1 2 1.0
 #v "Country" s
 "usa"
 "usa"
@@ -35,3 +35,6 @@
 #e "year" n
 1997
 1996
+#e "years" s
+"1997"
+"1996"
