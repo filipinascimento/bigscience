@@ -965,7 +965,7 @@ let projectToData = {
 	},
 }
 
-let projectsOrder = ["babar","atlas","ligo","icecube"];
+let projectsOrder = ["atlas","babar","ligo","icecube"];
 
 d3.select("#selectionmenu")
 	.selectAll("a")
