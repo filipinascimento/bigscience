@@ -21,9 +21,7 @@ Processed data is organized in the `Data` folder:
 In order to run the full data processing pipeline, MAG data and INSPIRE data should be downloaded and moved to their respective folders in `Data`. The code can be found in the `Notebooks` and `Scripts` folders. `Scripts` folder contains the code to preprocess INSPIRE (`preprocessINSPIRE.py`) and the MAG dataset `preprocessMAG.py`. Both scripts need to be executed before the analyses if the objective is regenerate all the intermediate datasets. This process is not needed to generate the final plots by using `Notebooks/PlotAllProjects.ipynb` and `Notebooks/GenerateMaps.ipynb`, as these scripts only require files in the `Data/PlotData/` and `Data/Networks/`, which are already available in this repository.
 
 The analysis of the physics projects can be found in the `PhysicsProjectAnalysis.ipynb` in the `Notebooks` folder. To generate the map visualization of the collaboration network of institutions for the Physics projects, use the `GenerateMaps.ipynb` notebook. The code for the interactive institutions map can be found in the `Visualization` folder. Biomedical analysis can be found in `BiomedicalProjectAnalysis.ipynb` and funding analyses in `Funding.ipynb`.
-The science maps featured in Figure 3 were created using the csv files in `Data/Publications/` and the ‘Visualization > Topical > Map of Science via Journals’ available in the Sci2 Tool freely available at https://sci2.cns.iu.edu. 
-
-
+The science maps featured in Fig. 3 were created using the csv files in `Data/ToMapOfScience/` and the ‘Visualization > Topical > Map of Science via Journals’ available in the Sci2 Tool freely available at https://sci2.cns.iu.edu. The interactive science map visualizations can be explored at https://cns-iu.github.io/nature-expert-recommendation.
 
 
 ## Acknowledgments 
