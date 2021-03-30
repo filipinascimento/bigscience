@@ -13,7 +13,7 @@ Processed data is organized in the `Data` folder:
 - `Data/PlotData`: contains all the processed data of the projects used to plot the considered metrics over time for Fig. 2.
 - `Data/MAG`: Place to move the MAG dataset.
 - `Data/INSPIRE`: Place to move the INSPIRE dataset files. The complete dataset employed in this study can be found in https://dx.doi.org/10.5281/zenodo.4496558. (a more recent version can be collected from http://old.inspirehep.net/dumps/inspire-dump.html).
-- `Data/ToInstitutionsMap`: contains all the processed data used to generate Fig. 3 and interactive visualizations for the collaboration network of institutions.
+- `Data/ToInstitutionsMap`: contains all the processed data used to generate Fig. 3 and the interactive visualizations for the collaboration network of institutions.
 - `Data/ToMapOfScience`: contains all the processed data used to generate Fig. 4 and the map of science interactive visualizations. This includes edges and matched keywords to the Sci2 Tool (sub)disciplines.
 
 
@@ -21,14 +21,14 @@ Processed data is organized in the `Data` folder:
 In order to run the full data processing pipeline, MAG data and INSPIRE data should be downloaded and moved to their respective folders in `Data`. The code can be found in the `Notebooks` and `Scripts` folders. `Scripts` folder contains the code to preprocess INSPIRE (`preprocessINSPIRE.py`) and the MAG dataset `preprocessMAG.py`. Both scripts need to be executed before the analyses if the objective is regenerate all the intermediate datasets. This process is only needed if the user wants to regenerate all the data from raw files. The final plots by using `Scripts/PlotAllProjects.py` and `Notebooks/GenerateMaps.ipynb`, as these scripts only require files in the `Data/PlotData/` and `Data/Networks/`, which are already available in this repository.
 
 The analysis of the physics projects can be found in the `PhysicsProjectAnalysis.ipynb` in the `Notebooks` folder. To generate the map visualization of the collaboration network of institutions for the Physics projects, use the `GenerateMaps.ipynb` notebook. The code for the interactive institutions map can be found in the `Visualization` folder. Biomedical analysis can be found in `Scripts/BiomedicalProjectAnalysis.py` and funding analyses in `Notebooks/Funding.ipynb`.
-The science maps featured in Figure 4 were created using the csv files in `Data/ToMapOfScience` and the ‘Visualization > Topical > Map of Science via Journals’ available in the Sci2 Tool freely available at https://sci2.cns.iu.edu. Auxliary scripts `BiomedicalToScienceMapKeywords.py` and `PhysicsToScienceMapKeywords.py` are used to generate the edges files for the science maps.
+The science maps featured in Fig. 4 were created using the csv files in `Data/ToMapOfScience` and the ‘Visualization > Topical > Map of Science via Journals’ available in the Sci2 Tool freely available at https://sci2.cns.iu.edu. Auxliary scripts `BiomedicalToScienceMapKeywords.py` and `PhysicsToScienceMapKeywords.py` are used to generate the edges files for the science maps.
 
 
 ## Interactive Visualizations
 Interactive versions of Figs. 3 and 4 can be accessed respectively at:
 
-- https://bigscience.github.io/institutionsmaps/
-- https://bigscience.github.io/sciencemaps/
+- Institutions maps: https://bigscience.github.io/institutionsmaps/
+- Science maps: https://bigscience.github.io/sciencemaps/
 
 
 ## Acknowledgments 

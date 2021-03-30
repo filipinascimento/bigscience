@@ -945,13 +945,13 @@ export class HeliosMap {
 let projectToData = {
 	"atlas":{
 		name:"ATLAS",
-		mapColor:"#B1C3B6",
-		color:"#008758"
+		mapColor:"#BBB2B6",
+		color:"#CC006B"
 	},
 	"babar":{
 		name:"BaBar",
-		mapColor:"#BBB2B6",
-		color:"#CC006B"
+		mapColor:"#B1C3B6",
+		color:"#008758"
 	},
 	"ligo":{
 		name:"LIGO",
